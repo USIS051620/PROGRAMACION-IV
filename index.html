@@ -15,21 +15,34 @@
             <div class="row">
                 <div class="col">Num 1:</div>
                 <div class="col">
-                    <input type="text" class="form-control">
+                    <input v-model="num1" title="Num 1" type="text" class="form-control">
                 </div>
             </div>
             <div class="row">
                 <div class="col">Num 2:</div>
                 <div class="col">
-                    <input type="text" class="form-control">
+                    <input v-model="num2" title="Num 2" type="text" class="form-control">
                 </div>
             </div>
             <div class="row">
-                <div class="col">
-                    <input class="btn btn-primary" type="submit" value="Sumar">
-                    <input class="btn btn-warning" type="reset" value="Restar">
-                    <button class="btn btn-success">Multiplicar</button>
-                    <button class="btn btn-success">Dividir</button>
+                <div class="col text-center">
+                    <div class="alert alert-primary" role="alert">
+                        La operacion 
+                        <span class="badge rounded-pill bg-dark">{{tipo}}</span>
+                        da como resultado:
+                        <span class="badge rounded-pill bg-success">{{resp.toFixed(2)}}</span>
+                    </div>
+
+                </div>
+            </div>
+            <div class="row m-2">
+                <div class="col text-center">
+                    <button v-on:click="operacion('+')" class="btn btn-primary">+</button>
+                    <button v-on:click="operacion('-')" class="btn btn-warning">-</button>
+                    <button v-on:click="operacion('*')" class="btn btn-success">*</button>
+                    <button v-on:click="operacion('/')" class="btn btn-danger">/</button>
+                    <button v-on:click="operacion('^')" class="btn btn-light">^</button>
+                    <button v-on:click="operacion('%')" class="btn btn-light">%</button>
                 </div>
             </div>
         </div>
@@ -40,7 +53,35 @@
         var app = new Vue({
             el: '#app',
             data: {
-                mensaje: 'HOLA MUNDO DESDE VUE.JS'
+                num1:'0',
+                num2:'0',
+                resp:0,
+                tipo:''
+            },
+            methods:{
+                operacion(tipo){
+                    this.tipo = tipo;
+                    switch(tipo){
+                        case '+':
+                            this.resp = parseFloat(this.num1 || 0) + parseFloat(this.num2 || 0);
+                            break;
+                        case '-':
+                            this.resp = parseFloat(this.num1 || 0) - parseFloat(this.num2 || 0);
+                            break;
+                        case '*':
+                            this.resp = parseFloat(this.num1 || 0) * parseFloat(this.num2 || 0);
+                            break;
+                        case '/':
+                            this.resp = parseFloat(this.num1 || 0) / parseFloat(this.num2 || 0);
+                            break;
+                        case '^':
+                            this.resp = Math.pow(parseFloat(this.num1 || 0), parseFloat(this.num2 || 0));
+                            break;
+                        case '%':
+                            this.resp = parseFloat(this.num1 || 0) * parseFloat(this.num2 || 0)/100;
+                            break;
+                    }
+                }
             }
         });
     </script>
