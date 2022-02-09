@@ -24,17 +24,19 @@ var app = new Vue({
             parametros = [];
         if(this.cliente.accion == 'nuevo'){
             sql = 'INSERT INTO clientes (codigo, nombre, direccion, telefono, dui) VALUES (?,?,?,?,?)';
-            parametros = [this.cliente.codigo,this.cliente.nombre,this.cliente.direccion,this.cliente.telefono,this.cliente.dui]; 
+            parametros = [this.cliente.codigo,this.cliente.nombre,this.cliente.direccion,this.cliente.telefono,this.cliente.dui];
         }else if(this.cliente.accion == 'modificar'){
             sql = 'UPDATE clientes SET codigo=?, nombre=?, direccion=?, telefono=?, dui=? WHERE idCliente=?';
             parametros = [this.cliente.codigo,this.cliente.nombre,this.cliente.direccion,this.cliente.telefono,this.cliente.dui,this.cliente.idCliente];
+        }else if(this.cliente.accion == 'eliminar'){
+            sql = 'DELETE FROM clientes WHERE idCliente=?';
+            parametros = [this.cliente.idCliente];
         }
-        console.log(sql, parametros, this.cliente);
             db_sistema.transaction(tx=>{
                 tx.executeSql(sql,
                     parametros,
                 (tx, results)=>{
-                    this.cliente.msg = 'Cliente guardado con exito';
+                    this.cliente.msg = 'Cliente procesado con exito';
                     this.nuevoCliente();
                     this.obtenerClientes();
                 },
@@ -46,6 +48,13 @@ var app = new Vue({
         modificarCliente(cliente){
             this.cliente = cliente;
             this.cliente.accion = 'modificar';
+        },
+        eliminarCliente(cliente){
+            if( confirm(`¿Esta seguro de eliminar el cliente ${cliente.nombre}?`) ){
+                this.cliente.idCliente = cliente.idCliente;
+                this.cliente.accion = 'eliminar';
+                this.guardarCliente();
+            }
         },
         obtenerClientes(){
             db_sistema.transaction(tx=>{
