@@ -77,7 +77,7 @@
                         <thead>
                             <tr>
                                 <td colspan="6">
-                                    Buscar: <input title="Introduzca el texto a buscar" v-model="buscar" class="form-control" type="text">
+                                    Buscar: <input title="Introduzca el texto a buscar" @keyup="buscarCliente" v-model="buscar" class="form-control" type="text">
                                 </td>
                             </tr>
                             <tr>

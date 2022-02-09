@@ -19,6 +19,14 @@ var app = new Vue({
         },
     },
     methods: {
+        buscarCliente(){
+            /*if( this.buscar.trim().length>0 ){
+                this.clientes = this.clientes.filter(item=>item.nombre.toLowerCase().indexOf(this.buscar.toLowerCase())>=0);
+            } else {
+                this.obtenerClientes();
+            }*/
+            this.obtenerClientes(this.buscar);
+        },
         guardarCliente(){
             let sql = '',
             parametros = [];
@@ -56,10 +64,14 @@ var app = new Vue({
                 this.guardarCliente();
             }
         },
-        obtenerClientes(){
+        obtenerClientes(busqueda=''){
             db_sistema.transaction(tx=>{
-                tx.executeSql('SELECT * FROM clientes', [], (tx, results)=>{
+                tx.executeSql(`SELECT * FROM clientes WHERE nombre like "%${busqueda}%" OR codigo like "%${busqueda}%"`, [], (tx, results)=>{
                     this.clientes = results.rows;
+                    /*this.clientes = [];
+                    for(let i=0; i<results.rows.length; i++){
+                        this.clientes.push(results.rows.item(i));
+                    }*/
                 });
             });
         },
