@@ -5,8 +5,10 @@ if(!db_sistema){
 var app = new Vue({
     el: '#appCliente',
     data: {
+        clientes: [],
+        buscar: '',
         cliente: {
-            accion: '',
+            accion: 'nuevo',
             msg : '',
             idCliente: '',
             codigo: '',
@@ -18,16 +20,37 @@ var app = new Vue({
     },
     methods: {
         guardarCliente(){
+            let sql = '',
+            parametros = [];
+        if(this.cliente.accion == 'nuevo'){
+            sql = 'INSERT INTO clientes (codigo, nombre, direccion, telefono, dui) VALUES (?,?,?,?,?)';
+            parametros = [this.cliente.codigo,this.cliente.nombre,this.cliente.direccion,this.cliente.telefono,this.cliente.dui]; 
+        }else if(this.cliente.accion == 'modificar'){
+            sql = 'UPDATE clientes SET codigo=?, nombre=?, direccion=?, telefono=?, dui=? WHERE idCliente=?';
+            parametros = [this.cliente.codigo,this.cliente.nombre,this.cliente.direccion,this.cliente.telefono,this.cliente.dui,this.cliente.idCliente];
+        }
+        console.log(sql, parametros, this.cliente);
             db_sistema.transaction(tx=>{
-                tx.executeSql('INSERT INTO clientes (codigo, nombre, direccion, telefono, dui) VALUES (?,?,?,?,?)',
-                [this.cliente.codigo, this.cliente.nombre, this.cliente.direccion, this.cliente.telefono, 
-                    this.cliente.dui],
+                tx.executeSql(sql,
+                    parametros,
                 (tx, results)=>{
                     this.cliente.msg = 'Cliente guardado con exito';
                     this.nuevoCliente();
+                    this.obtenerClientes();
                 },
                 (tx, error)=>{
                     this.cliente.msg = `Error al guardar el cliente ${error.message}`;
+                });
+            });
+        },
+        modificarCliente(cliente){
+            this.cliente = cliente;
+            this.cliente.accion = 'modificar';
+        },
+        obtenerClientes(){
+            db_sistema.transaction(tx=>{
+                tx.executeSql('SELECT * FROM clientes', [], (tx, results)=>{
+                    this.clientes = results.rows;
                 });
             });
         },
@@ -48,5 +71,6 @@ var app = new Vue({
         }, err=>{
             console.log('Error al crear la tabla de clientes', err);
         });
+        this.obtenerClientes();
     }
 });

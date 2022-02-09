@@ -66,6 +66,44 @@
                     </div>
                 </div>
             </form>
+            <div class="card mb-3" id="cardBuscarCliente">
+                <div class="card-header text-white bg-dark">
+                    Busqueda de Clientes
+
+                    <button type="button" class="btn-close bg-white" data-bs-dismiss="alert" data-bs-target="#cardBuscarCliente" aria-label="Close"></button>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <td colspan="6">
+                                    Buscar: <input title="Introduzca el texto a buscar" v-model="buscar" class="form-control" type="text">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Codigo</th>
+                                <th>Nombre</th>
+                                <th>Direccion</th>
+                                <th>Telefono</th>
+                                <th>DUI</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="cliente in clientes" :key="cliente.idCliente" @click="modificarCliente(cliente)">
+                                <td>{{cliente.codigo}}</td>
+                                <td>{{cliente.nombre}}</td>
+                                <td>{{cliente.direccion}}</td>
+                                <td>{{cliente.telefono}}</td>
+                                <td>{{cliente.dui}}</td>
+                                <td>
+                                    <button type="button" class="btn btn-danger" @click="eliminarCliente(cliente)">Eliminar</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div> 
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
