@@ -11,7 +11,7 @@
 <body>
     <div id="appCliente">
         <div class="container-fluid">
-            <form @submit.prevent="guardarCliente" method="post" id="frmCliente">
+            <form @submit.prevent="guardarCliente" @reset.prevent="nuevoCliente" method="post" id="frmCliente">
                 <div class="card mb-3">
                     <div class="card-header text-white bg-dark">
                         Administracion de Clientes
@@ -90,14 +90,14 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="cliente in clientes" :key="cliente.idCliente" @click="modificarCliente(cliente)">
-                                <td>{{cliente.codigo}}</td>
-                                <td>{{cliente.nombre}}</td>
-                                <td>{{cliente.direccion}}</td>
-                                <td>{{cliente.telefono}}</td>
-                                <td>{{cliente.dui}}</td>
+                            <tr v-for="item in clientes" :key="item.idCliente" @click="modificarCliente(item)">
+                                <td>{{item.codigo}}</td>
+                                <td>{{item.nombre}}</td>
+                                <td>{{item.direccion}}</td>
+                                <td>{{item.telefono}}</td>
+                                <td>{{item.dui}}</td>
                                 <td>
-                                    <button type="button" class="btn btn-danger" @click="eliminarCliente(cliente)">Eliminar</button>
+                                    <button type="button" class="btn btn-danger" @click="eliminarCliente(item)">Eliminar</button>
                                 </td>
                             </tr>
                         </tbody>
