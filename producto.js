@@ -23,13 +23,20 @@ Vue.component('producto',{
     },
     methods:{
         buscandoProducto(){
-            this.obtenerProductos(this.buscar);
+            this.obtenerDatos(this.buscar);
         },
         eliminarProducto(producto){
             if( confirm(`Esta seguro de eliminar el producto ${producto.nombre}?`) ){
-                this.producto.accion = 'eliminar';
-                this.producto.idProducto = producto.idProducto;
-                this.guardarProducto();
+                let store = abrirStore('producto', 'readwrite'),
+                query = store.delete(producto.idProducto);
+                query.onsuccess = e=>{
+                    this.nuevoProducto();
+                    this.obtenerDatos();
+                    this.producto.msg = 'Producto eliminado con exito';
+                };
+                query.onerror = e=>{
+                    this.producto.msg = `Error al eliminar el producto ${e.target.error}`;
+                };
             }
             this.nuevoProducto();
         },
@@ -38,36 +45,39 @@ Vue.component('producto',{
             this.producto.accion = 'modificar';
         },
         guardarProducto(){
-            this.obtenerProductos();
-            let productos = JSON.parse(localStorage.getItem('productos')) || [];
+            let store = abrirStore('producto', 'readwrite');
             if(this.producto.accion=="nuevo"){
                 this.producto.idProducto = generarIdUnicoFecha();
-                productos.push(this.producto);
-            } else if(this.producto.accion=="modificar"){
-                let index = productos.findIndex(producto=>producto.idProducto==this.producto.idProducto);
-                productos[index] = this.producto;
-            } else if( this.producto.accion=="eliminar" ){
-                let index = productos.findIndex(producto=>producto.idProducto==this.producto.idProducto);
-                productos.splice(index,1);
             }
-            localStorage.setItem('productos', JSON.stringify(productos));
-            this.nuevoProducto();
-            this.obtenerProductos();
-            this.producto.msg = 'Producto procesado con exito';
+            let query = store.put(this.producto);
+            query.onsuccess = e=>{
+                this.nuevoProducto();
+                this.obtenerDatos();
+                this.producto.msg = 'Producto procesado con exito';
+            };
+            query.onerror = e=>{
+                this.producto.msg = `Error al procesar el producto ${e.target.error}`;
+            };
         },
-        obtenerProductos(valor=''){
-            this.productos = [];
-            let productos = JSON.parse(localStorage.getItem('productos')) || [];
-            this.productos = productos.filter(producto=>producto.nombre.toLowerCase().indexOf(valor.toLowerCase())>-1);
-
-            this.categorias = [];
-            let categorias = JSON.parse(localStorage.getItem('categorias')) || [];
-            this.categorias = categorias.map(categoria=>{
-                return {
-                    id: categoria.idCategoria,
-                    label: categoria.nombre,
-                }
-            });
+        obtenerDatos(valor=''){
+            let store = abrirStore('producto', 'readonly'),
+                data = store.getAll();
+            data.onsuccess = e=>{
+                this.productos = data.result.filter(producto=>producto.nombre.toLowerCase().indexOf(valor.toLowerCase())>-1);
+            };
+            data.onerror = e=>{
+                console.log(e.target.error);
+            };
+            let store_cat = abrirStore('categoria', 'readonly'),
+                data_cat = store_cat.getAll();
+            data_cat.onsuccess = e=>{
+                this.categorias = data_cat.result.map(categoria=>{
+                    return {
+                        id: categoria.idCategoria,
+                        label: categoria.nombre
+                    }
+                });
+            };
         },
         nuevoProducto(){
             this.producto.accion = 'nuevo';
@@ -80,13 +90,14 @@ Vue.component('producto',{
         }
     },
     created(){
-        this.obtenerProductos();
+        //this.obtenerDatos();
     },
     template:`
         <div id="appCiente">
             <div class="card text-white" id="carProducto">
                 <div class="card-header bg-primary">
                     Registro de Productos
+
                     <button type="button" class="btn-close text-end" data-bs-dismiss="alert" data-bs-target="#carProducto" aria-label="Close"></button>
                 </div>
                 <div class="card-body text-dark">
@@ -144,13 +155,14 @@ Vue.component('producto',{
             <div class="card text-white" id="carBuscarProducto">
                 <div class="card-header bg-primary">
                     Busqueda de Productos
+
                     <button type="button" class="btn-close" data-bs-dismiss="alert" data-bs-target="#carBuscarProducto" aria-label="Close"></button>
                 </div>
                 <div class="card-body">
                     <table class="table table-dark table-hover">
                         <thead>
                             <tr>
-                                <th colspan="6">
+                                <th colspan="7">
                                     Buscar: <input @keyup="buscandoProducto" v-model="buscar" placeholder="buscar aqui" class="form-control" type="text" >
                                 </th>
                             </tr>
@@ -159,6 +171,7 @@ Vue.component('producto',{
                                 <th>NOMBRE</th>
                                 <th>MARCA</th>
                                 <th>PRECIO</th>
+                                <th>CATEGORIA</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -168,6 +181,7 @@ Vue.component('producto',{
                                 <td>{{item.nombre}}</td>
                                 <td>{{item.marca}}</td>
                                 <td>{{item.precio}}</td>
+                                <td>{{item.categoria.label}}</td>
                                 <td>
                                     <button class="btn btn-danger" @click="eliminarProducto(item)">Eliminar</button>
                                 </td>
