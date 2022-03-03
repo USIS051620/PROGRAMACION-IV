@@ -18,13 +18,20 @@ Vue.component('cliente',{
     },
     methods:{
         buscandoCliente(){
-            this.obtenerClientes(this.buscar);
+            this.obtenerDatos(this.buscar);
         },
         eliminarCliente(cliente){
             if( confirm(`Esta seguro de eliminar el cliente ${cliente.nombre}?`) ){
-                this.cliente.accion = 'eliminar';
-                this.cliente.idCliente = cliente.idCliente;
-                this.guardarCliente();
+                let store = abrirStore('cliente', 'readwrite'),
+                   query = store.delete(cliente.idCliente);
+                query.onsuccess = e=>{
+                    this.nuevoCliente();
+                    this.obtenerDatos();
+                    this.cliente.msg = 'Cliente eliminado con exito';
+                };
+                query.onerror = e=>{
+                    this.cliente.msg = `Error al eliminar el cliente ${e.target.error}`;
+                };
             }
             this.nuevoCliente();
         },
@@ -33,27 +40,29 @@ Vue.component('cliente',{
             this.cliente.accion = 'modificar';
         },
         guardarCliente(){
-            this.obtenerClientes();
-            let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+            let store = abrirStore('cliente', 'readwrite');
             if(this.cliente.accion=="nuevo"){
                 this.cliente.idCliente = generarIdUnicoFecha();
-                clientes.push(this.cliente);
-            } else if(this.cliente.accion=="modificar"){
-                let index = clientes.findIndex(cliente=>cliente.idCliente==this.cliente.idCliente);
-                clientes[index] = this.cliente;
-            } else if( this.cliente.accion=="eliminar" ){
-                let index = clientes.findIndex(cliente=>cliente.idCliente==this.cliente.idCliente);
-                clientes.splice(index,1);
             }
-            localStorage.setItem('clientes', JSON.stringify(clientes));
-            this.nuevoCliente();
-            this.obtenerClientes();
-            this.cliente.msg = 'Cliente procesado con exito';
+            let query = store.put(this.cliente);
+            query.onsuccess = e=>{
+                this.nuevoCliente();
+                this.obtenerDatos();
+                this.cliente.msg = 'Cliente procesado con exito';
+            };
+            query.onerror = e=>{
+                this.cliente.msg = `Error al procesar el cliente ${e.target.error}`;
+            };
         },
-        obtenerClientes(valor=''){
-            this.clientes = [];
-            let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
-            this.clientes = clientes.filter(cliente=>cliente.nombre.toLowerCase().indexOf(valor.toLowerCase())>-1);
+        obtenerDatos(valor=''){
+            let store = abrirStore('cliente', 'readonly'),
+                data = store.getAll();
+            data.onsuccess = e=>{
+                this.clientes = data.result.filter(cliente=>cliente.nombre.toLowerCase().indexOf(valor.toLowerCase())>-1);
+            };
+            data.onerror = e=>{
+                this.cliente.msg = `Error al obtener los clientes ${e.target.error}`;
+            };
         },
         nuevoCliente(){
             this.cliente.accion = 'nuevo';
@@ -67,7 +76,7 @@ Vue.component('cliente',{
         }
     },
     created(){
-        this.obtenerClientes();
+        //this.obtenerDatos();
     },
     template:`
         <div id="appCiente">
